@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Layout from '../componentes/Layout'
 import { useAuth } from '../contextos/ContextoAuth'
 import { obterResumo, obterResumoUsuario, obterResumoPorUsuario } from '../servicos/indicacoes'
+import { obterHoraAtualBrasilia } from '../utils/dataHora'
 
 function CartaoMetrica({ titulo, valor, cor = 'var(--azul)', icone, rodape }) {
   return (
@@ -121,7 +122,7 @@ export default function PaginaDashboard() {
   }, [perfil])
 
   const saudacao = () => {
-    const hora = new Date().getHours()
+    const hora = obterHoraAtualBrasilia()
     if (hora < 12) return 'Bom dia'
     if (hora < 18) return 'Boa tarde'
     return 'Boa noite'

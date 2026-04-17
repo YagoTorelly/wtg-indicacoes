@@ -1,4 +1,5 @@
 import BadgeStatus from './BadgeStatus'
+import { formatarDataBrasilia } from '../utils/dataHora'
 
 const estilos = {
   wrapper: {
@@ -142,7 +143,7 @@ export default function TabelaIndicacoes({
                   {formatarValor(item.valor)}
                 </td>
                 <td style={{ ...estilos.td, fontSize: '12px', color: 'var(--cinza-500)' }}>
-                  {formatarData(item.data_indicacao)}
+                  {formatarDataBrasilia(item.data_indicacao)}
                 </td>
                 <td style={estilos.td}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>

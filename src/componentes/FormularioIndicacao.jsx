@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { PRODUTOS, STATUS } from '../constantes'
+import { formatarDataHoraBrasilia, obterDataValida } from '../utils/dataHora'
 
 const estiloGrupo = {
   display: 'flex',
@@ -33,6 +34,27 @@ const estiloGrade = {
   gap: '16px',
 }
 
+function normalizarObservacoes(observacoes) {
+  if (!Array.isArray(observacoes)) return []
+
+  return observacoes
+    .map((observacao) => {
+      if (typeof observacao === 'string') {
+        return { texto: observacao, data: null }
+      }
+
+      if (!observacao || typeof observacao !== 'object') {
+        return null
+      }
+
+      return {
+        texto: typeof observacao.texto === 'string' ? observacao.texto : '',
+        data: observacao.data ?? null,
+      }
+    })
+    .filter((observacao) => observacao && observacao.texto.trim())
+}
+
 export default function FormularioIndicacao({ dados: dadosIniciais = {}, onSubmit, carregando }) {
   const [dados, setDados] = useState({
     cliente: dadosIniciais.cliente || '',
@@ -45,7 +67,7 @@ export default function FormularioIndicacao({ dados: dadosIniciais = {}, onSubmi
     direcionado_para: dadosIniciais.direcionado_para || '',
     status: dadosIniciais.status || 'em_andamento',
     valor: dadosIniciais.valor ?? '',
-    observacoes: dadosIniciais.observacoes || [],
+    observacoes: normalizarObservacoes(dadosIniciais.observacoes),
   })
   const [novaObservacao, setNovaObservacao] = useState('')
   const [erro, setErro] = useState(null)
@@ -246,25 +268,30 @@ export default function FormularioIndicacao({ dados: dadosIniciais = {}, onSubmi
         {dados.observacoes.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto', paddingRight: '4px' }}>
             {[...dados.observacoes].reverse().map((obs, idx) => (
-              <div
-                key={idx}
-                style={{
-                  padding: '10px 12px',
-                  background: 'var(--cinza-100)',
-                  borderRadius: 'var(--radius)',
-                  borderLeft: '3px solid var(--azul)',
-                }}
-              >
-                <div style={{ fontSize: '11px', color: 'var(--cinza-500)', marginBottom: '4px' }}>
-                  {new Intl.DateTimeFormat('pt-BR', {
-                    day: '2-digit', month: '2-digit', year: 'numeric',
-                    hour: '2-digit', minute: '2-digit',
-                  }).format(new Date(obs.data))}
-                </div>
-                <div style={{ fontSize: '13px', color: 'var(--cinza-900)', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
-                  {obs.texto}
-                </div>
-              </div>
+              (() => {
+                const dataObservacao = obterDataValida(obs.data)
+
+                return (
+                  <div
+                    key={idx}
+                    style={{
+                      padding: '10px 12px',
+                      background: 'var(--cinza-100)',
+                      borderRadius: 'var(--radius)',
+                      borderLeft: '3px solid var(--azul)',
+                    }}
+                  >
+                    {dataObservacao && (
+                      <div style={{ fontSize: '11px', color: 'var(--cinza-500)', marginBottom: '4px' }}>
+                        {formatarDataHoraBrasilia(dataObservacao)}
+                      </div>
+                    )}
+                    <div style={{ fontSize: '13px', color: 'var(--cinza-900)', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                      {obs.texto}
+                    </div>
+                  </div>
+                )
+              })()
             ))}
           </div>
         )}
