@@ -1,8 +1,9 @@
 import { supabase } from '../supabase'
+import { converterMoedaBrasilParaNumero } from '../utils/valor'
 
 /**
- * Lista indicações do usuário logado (RLS garante o escopo).
- * Admin vê todas, user vê apenas as suas.
+ * Lista indicaÃ§Ãµes do usuÃ¡rio logado (RLS garante o escopo).
+ * Admin vÃª todas, user vÃª apenas as suas.
  */
 export async function listarIndicacoes({ pagina = 1, porPagina = 20, filtros = {} } = {}) {
   let query = supabase
@@ -185,14 +186,19 @@ export async function obterResumoPorUsuario() {
 }
 
 function _validarDados(dados) {
-  if (!dados.cliente?.trim()) throw new Error('Cliente é obrigatório.')
-  if (!dados.telefone?.trim()) throw new Error('Telefone é obrigatório.')
-  if (!dados.produto_interesse) throw new Error('Produto de interesse é obrigatório.')
-  if (!dados.direcionado_para?.trim()) throw new Error('Direcionado para é obrigatório.')
+  if (!dados.cliente?.trim()) throw new Error('Cliente e obrigatorio.')
+  if (!dados.telefone?.trim()) throw new Error('Telefone e obrigatorio.')
+  if (!dados.produto_interesse) throw new Error('Produto de interesse e obrigatorio.')
+  if (!dados.direcionado_para?.trim()) throw new Error('Direcionado para e obrigatorio.')
   if (dados.tem_consultor && !dados.nome_consultor?.trim()) {
-    throw new Error('Nome do consultor é obrigatório quando "Tem consultor" está marcado.')
+    throw new Error('Nome do consultor e obrigatorio quando "Tem consultor" esta marcado.')
   }
   if (dados.valor !== null && dados.valor !== undefined && dados.valor !== '') {
-    if (Number(dados.valor) < 0) throw new Error('Valor não pode ser negativo.')
+    const valorNumerico = typeof dados.valor === 'number'
+      ? dados.valor
+      : converterMoedaBrasilParaNumero(dados.valor)
+
+    if (valorNumerico === null) throw new Error('Valor invalido. Use o formato 1.234,56.')
+    if (valorNumerico < 0) throw new Error('Valor nao pode ser negativo.')
   }
 }

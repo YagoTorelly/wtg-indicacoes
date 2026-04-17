@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { PRODUTOS, STATUS } from '../constantes'
 import { formatarDataHoraBrasilia, obterDataValida } from '../utils/dataHora'
+import { converterMoedaBrasilParaNumero, formatarValorParaEntrada, normalizarEntradaMoedaBrasil } from '../utils/valor'
 
 const estiloGrupo = {
   display: 'flex',
@@ -66,7 +67,7 @@ export default function FormularioIndicacao({ dados: dadosIniciais = {}, onSubmi
     produto_interesse: dadosIniciais.produto_interesse || '',
     direcionado_para: dadosIniciais.direcionado_para || '',
     status: dadosIniciais.status || 'em_andamento',
-    valor: dadosIniciais.valor ?? '',
+    valor: formatarValorParaEntrada(dadosIniciais.valor),
     observacoes: normalizarObservacoes(dadosIniciais.observacoes),
   })
   const [novaObservacao, setNovaObservacao] = useState('')
@@ -90,13 +91,24 @@ export default function FormularioIndicacao({ dados: dadosIniciais = {}, onSubmi
     })
   }
 
+  function handleBlurValor(e) {
+    e.target.style.borderColor = 'var(--cinza-300)'
+
+    const valorNumerico = converterMoedaBrasilParaNumero(dados.valor)
+    if (valorNumerico === null) return
+
+    atualizar('valor', formatarValorParaEntrada(valorNumerico))
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     setErro(null)
     try {
+      const valorNumerico = converterMoedaBrasilParaNumero(dados.valor)
+
       await onSubmit({
         ...dados,
-        valor: dados.valor === '' ? null : Number(dados.valor),
+        valor: valorNumerico,
       })
     } catch (err) {
       setErro(err.message)
@@ -242,15 +254,14 @@ export default function FormularioIndicacao({ dados: dadosIniciais = {}, onSubmi
       <Campo label="Valor (R$)" htmlFor="valor">
         <input
           id="valor"
-          type="number"
-          min="0"
-          step="0.01"
+          type="text"
+          inputMode="decimal"
           style={estiloInput}
           value={dados.valor}
-          onChange={(e) => atualizar('valor', e.target.value)}
-          placeholder="0,00"
+          onChange={(e) => atualizar('valor', normalizarEntradaMoedaBrasil(e.target.value))}
+          placeholder="1.234,56"
           onFocus={(e) => { e.target.style.borderColor = 'var(--azul)' }}
-          onBlur={(e) => { e.target.style.borderColor = 'var(--cinza-300)' }}
+          onBlur={handleBlurValor}
         />
       </Campo>
 
