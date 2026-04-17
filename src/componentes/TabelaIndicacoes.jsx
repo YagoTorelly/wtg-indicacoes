@@ -70,6 +70,7 @@ export default function TabelaIndicacoes({
   mostrarColunaCriador = false,
   onEditar,
   onDeletar,
+  onAlterarStatus,
 }) {
   if (carregando) {
     return (
@@ -144,23 +145,59 @@ export default function TabelaIndicacoes({
                   {formatarData(item.data_indicacao)}
                 </td>
                 <td style={estilos.td}>
-                  <div style={estilos.acoes}>
-                    <button
-                      style={{ ...estilos.btnAcao, color: 'var(--azul)' }}
-                      onClick={() => onEditar(item)}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--azul-claro)'; e.currentTarget.style.borderColor = 'var(--azul)' }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--branco)'; e.currentTarget.style.borderColor = 'var(--cinza-300)' }}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      style={{ ...estilos.btnAcao, color: 'var(--vermelho)' }}
-                      onClick={() => onDeletar(item)}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--vermelho-bg)'; e.currentTarget.style.borderColor = 'var(--vermelho)' }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--branco)'; e.currentTarget.style.borderColor = 'var(--cinza-300)' }}
-                    >
-                      Excluir
-                    </button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={estilos.acoes}>
+                      <button
+                        style={{ ...estilos.btnAcao, color: 'var(--azul)' }}
+                        onClick={() => onEditar(item)}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--azul-claro)'; e.currentTarget.style.borderColor = 'var(--azul)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--branco)'; e.currentTarget.style.borderColor = 'var(--cinza-300)' }}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        style={{ ...estilos.btnAcao, color: 'var(--vermelho)' }}
+                        onClick={() => onDeletar(item)}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--vermelho-bg)'; e.currentTarget.style.borderColor = 'var(--vermelho)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--branco)'; e.currentTarget.style.borderColor = 'var(--cinza-300)' }}
+                      >
+                        Excluir
+                      </button>
+                    </div>
+                    {onAlterarStatus && (
+                      <div style={estilos.acoes}>
+                        <button
+                          style={{
+                            ...estilos.btnAcao,
+                            color: item.status === 'realizado' ? 'var(--branco)' : 'var(--verde)',
+                            background: item.status === 'realizado' ? 'var(--verde)' : 'var(--branco)',
+                            borderColor: 'var(--verde)',
+                            fontSize: '11px',
+                          }}
+                          onClick={() => onAlterarStatus(item, 'realizado')}
+                          disabled={item.status === 'realizado'}
+                          onMouseEnter={(e) => { if (item.status !== 'realizado') { e.currentTarget.style.background = 'var(--verde-bg)' } }}
+                          onMouseLeave={(e) => { if (item.status !== 'realizado') { e.currentTarget.style.background = 'var(--branco)' } }}
+                        >
+                          ✓ Realizado
+                        </button>
+                        <button
+                          style={{
+                            ...estilos.btnAcao,
+                            color: item.status === 'nao_realizado' ? 'var(--branco)' : 'var(--vermelho)',
+                            background: item.status === 'nao_realizado' ? 'var(--vermelho)' : 'var(--branco)',
+                            borderColor: 'var(--vermelho)',
+                            fontSize: '11px',
+                          }}
+                          onClick={() => onAlterarStatus(item, 'nao_realizado')}
+                          disabled={item.status === 'nao_realizado'}
+                          onMouseEnter={(e) => { if (item.status !== 'nao_realizado') { e.currentTarget.style.background = 'var(--vermelho-bg)' } }}
+                          onMouseLeave={(e) => { if (item.status !== 'nao_realizado') { e.currentTarget.style.background = 'var(--branco)' } }}
+                        >
+                          ✕ Não realizado
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </td>
               </tr>

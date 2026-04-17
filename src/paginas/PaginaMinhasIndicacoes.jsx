@@ -6,6 +6,7 @@ import Paginacao from '../componentes/Paginacao'
 import Modal from '../componentes/Modal'
 import FormularioIndicacao from '../componentes/FormularioIndicacao'
 import { useIndicacoes } from '../hooks/useIndicacoes'
+import { atualizarStatus } from '../servicos/indicacoes'
 
 export default function PaginaMinhasIndicacoes() {
   const {
@@ -18,6 +19,7 @@ export default function PaginaMinhasIndicacoes() {
     carregar,
     criar,
     atualizar,
+    atualizarLocal,
     deletar,
     mudarPagina,
     mudarFiltros,
@@ -73,6 +75,16 @@ export default function PaginaMinhasIndicacoes() {
       exibirMensagem(e.message, 'erro')
     } finally {
       setModalConfirmarDelete(null)
+    }
+  }
+
+  async function handleAlterarStatus(indicacao, novoStatus) {
+    try {
+      await atualizarStatus(indicacao.id, novoStatus)
+      atualizarLocal(indicacao.id, { status: novoStatus })
+      exibirMensagem(`Status atualizado para "${novoStatus === 'realizado' ? 'Realizado' : 'Não realizado'}"`, 'sucesso')
+    } catch (e) {
+      exibirMensagem(e.message, 'erro')
     }
   }
 
@@ -153,6 +165,7 @@ export default function PaginaMinhasIndicacoes() {
           mostrarColunaCriador={false}
           onEditar={abrirEditar}
           onDeletar={setModalConfirmarDelete}
+          onAlterarStatus={handleAlterarStatus}
         />
 
         {/* Paginação */}

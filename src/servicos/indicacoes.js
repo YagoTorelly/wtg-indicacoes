@@ -20,6 +20,7 @@ export async function listarIndicacoes({ pagina = 1, porPagina = 20, filtros = {
       direcionado_para,
       status,
       valor,
+      observacoes,
       data_indicacao,
       ultima_atualizacao,
       created_by,
@@ -69,6 +70,7 @@ export async function criarIndicacao(dados) {
     direcionado_para: dados.direcionado_para,
     status: dados.status || 'em_andamento',
     valor: dados.valor != null ? Number(dados.valor) : null,
+    observacoes: dados.observacoes || [],
   }
 
   const { data, error } = await supabase
@@ -95,11 +97,24 @@ export async function atualizarIndicacao(id, dados) {
     direcionado_para: dados.direcionado_para,
     status: dados.status,
     valor: dados.valor != null ? Number(dados.valor) : null,
+    observacoes: dados.observacoes || [],
   }
 
   const { data, error } = await supabase
     .from('indications')
     .update(payload)
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export async function atualizarStatus(id, status) {
+  const { data, error } = await supabase
+    .from('indications')
+    .update({ status })
     .eq('id', id)
     .select()
     .single()

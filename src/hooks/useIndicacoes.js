@@ -51,6 +51,10 @@ export function useIndicacoes() {
     return atualizada
   }
 
+  function atualizarLocal(id, parcial) {
+    setIndicacoes((prev) => prev.map((i) => (i.id === id ? { ...i, ...parcial } : i)))
+  }
+
   async function deletar(id) {
     await deletarIndicacao(id)
     setIndicacoes((prev) => prev.filter((i) => i.id !== id))
@@ -70,6 +74,7 @@ export function useIndicacoes() {
     carregar,
     criar,
     atualizar,
+    atualizarLocal,
     deletar,
     mudarPagina: (p) => carregar(p, filtros),
     mudarFiltros: (f) => carregar(1, f),

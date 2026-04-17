@@ -45,8 +45,18 @@ export default function FormularioIndicacao({ dados: dadosIniciais = {}, onSubmi
     direcionado_para: dadosIniciais.direcionado_para || '',
     status: dadosIniciais.status || 'em_andamento',
     valor: dadosIniciais.valor ?? '',
+    observacoes: dadosIniciais.observacoes || [],
   })
+  const [novaObservacao, setNovaObservacao] = useState('')
   const [erro, setErro] = useState(null)
+
+  function adicionarObservacao() {
+    const texto = novaObservacao.trim()
+    if (!texto) return
+    const entrada = { texto, data: new Date().toISOString() }
+    setDados((prev) => ({ ...prev, observacoes: [...prev.observacoes, entrada] }))
+    setNovaObservacao('')
+  }
 
   function atualizar(campo, valor) {
     setDados((prev) => {
@@ -221,6 +231,83 @@ export default function FormularioIndicacao({ dados: dadosIniciais = {}, onSubmi
           onBlur={(e) => { e.target.style.borderColor = 'var(--cinza-300)' }}
         />
       </Campo>
+
+      {/* Observações */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <label style={estiloLabel}>Observações</label>
+          {dados.observacoes.length > 0 && (
+            <span style={{ fontSize: '11px', color: 'var(--cinza-500)' }}>
+              {dados.observacoes.length} registro{dados.observacoes.length !== 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
+
+        {dados.observacoes.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto', paddingRight: '4px' }}>
+            {[...dados.observacoes].reverse().map((obs, idx) => (
+              <div
+                key={idx}
+                style={{
+                  padding: '10px 12px',
+                  background: 'var(--cinza-100)',
+                  borderRadius: 'var(--radius)',
+                  borderLeft: '3px solid var(--azul)',
+                }}
+              >
+                <div style={{ fontSize: '11px', color: 'var(--cinza-500)', marginBottom: '4px' }}>
+                  {new Intl.DateTimeFormat('pt-BR', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit',
+                  }).format(new Date(obs.data))}
+                </div>
+                <div style={{ fontSize: '13px', color: 'var(--cinza-900)', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                  {obs.texto}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <textarea
+            style={{
+              ...estiloInput,
+              resize: 'vertical',
+              minHeight: '72px',
+              lineHeight: '1.5',
+            }}
+            placeholder="Adicionar nova observação..."
+            value={novaObservacao}
+            onChange={(e) => setNovaObservacao(e.target.value)}
+            onFocus={(e) => { e.target.style.borderColor = 'var(--azul)' }}
+            onBlur={(e) => { e.target.style.borderColor = 'var(--cinza-300)' }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) adicionarObservacao()
+            }}
+          />
+          <button
+            type="button"
+            onClick={adicionarObservacao}
+            disabled={!novaObservacao.trim()}
+            style={{
+              alignSelf: 'flex-end',
+              padding: '9px 14px',
+              border: 'var(--borda)',
+              borderRadius: 'var(--radius)',
+              background: novaObservacao.trim() ? 'var(--azul-claro)' : 'var(--cinza-200)',
+              color: novaObservacao.trim() ? 'var(--azul)' : 'var(--cinza-500)',
+              fontSize: '13px',
+              fontWeight: '600',
+              whiteSpace: 'nowrap',
+              transition: 'all var(--transicao)',
+            }}
+          >
+            + Adicionar
+          </button>
+        </div>
+        <div style={{ fontSize: '11px', color: 'var(--cinza-500)' }}>Ctrl+Enter para adicionar rapidamente</div>
+      </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', paddingTop: '8px' }}>
         <button
