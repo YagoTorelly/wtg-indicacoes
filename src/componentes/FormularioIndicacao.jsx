@@ -1,0 +1,287 @@
+import { useState } from 'react'
+import { PRODUTOS, STATUS } from '../constantes'
+
+const estiloGrupo = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6px',
+}
+
+const estiloLabel = {
+  fontSize: '12px',
+  fontWeight: '600',
+  color: 'var(--cinza-700)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.5px',
+}
+
+const estiloInput = {
+  padding: '9px 12px',
+  border: 'var(--borda)',
+  borderRadius: 'var(--radius)',
+  fontSize: '14px',
+  color: 'var(--cinza-900)',
+  background: 'var(--branco)',
+  outline: 'none',
+  transition: 'border-color var(--transicao)',
+  width: '100%',
+}
+
+const estiloGrade = {
+  display: 'grid',
+  gridTemplateColumns: '1fr 1fr',
+  gap: '16px',
+}
+
+export default function FormularioIndicacao({ dados: dadosIniciais = {}, onSubmit, carregando }) {
+  const [dados, setDados] = useState({
+    cliente: dadosIniciais.cliente || '',
+    telefone: dadosIniciais.telefone || '',
+    email: dadosIniciais.email || '',
+    cliente_wtg: dadosIniciais.cliente_wtg ?? false,
+    tem_consultor: dadosIniciais.tem_consultor ?? false,
+    nome_consultor: dadosIniciais.nome_consultor || '',
+    produto_interesse: dadosIniciais.produto_interesse || '',
+    direcionado_para: dadosIniciais.direcionado_para || '',
+    status: dadosIniciais.status || 'em_andamento',
+    valor: dadosIniciais.valor ?? '',
+  })
+  const [erro, setErro] = useState(null)
+
+  function atualizar(campo, valor) {
+    setDados((prev) => {
+      const novo = { ...prev, [campo]: valor }
+      if (campo === 'tem_consultor' && !valor) {
+        novo.nome_consultor = ''
+      }
+      return novo
+    })
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setErro(null)
+    try {
+      await onSubmit({
+        ...dados,
+        valor: dados.valor === '' ? null : Number(dados.valor),
+      })
+    } catch (err) {
+      setErro(err.message)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {erro && (
+        <div
+          style={{
+            padding: '12px 16px',
+            background: 'var(--vermelho-bg)',
+            border: '1px solid var(--vermelho)',
+            borderRadius: 'var(--radius)',
+            color: 'var(--vermelho)',
+            fontSize: '13px',
+          }}
+        >
+          {erro}
+        </div>
+      )}
+
+      <div style={estiloGrade}>
+        <Campo label="Cliente *" htmlFor="cliente">
+          <input
+            id="cliente"
+            style={estiloInput}
+            value={dados.cliente}
+            onChange={(e) => atualizar('cliente', e.target.value)}
+            required
+            placeholder="Nome completo"
+            onFocus={(e) => { e.target.style.borderColor = 'var(--azul)' }}
+            onBlur={(e) => { e.target.style.borderColor = 'var(--cinza-300)' }}
+          />
+        </Campo>
+
+        <Campo label="Telefone *" htmlFor="telefone">
+          <input
+            id="telefone"
+            style={estiloInput}
+            value={dados.telefone}
+            onChange={(e) => atualizar('telefone', e.target.value)}
+            required
+            placeholder="(00) 00000-0000"
+            onFocus={(e) => { e.target.style.borderColor = 'var(--azul)' }}
+            onBlur={(e) => { e.target.style.borderColor = 'var(--cinza-300)' }}
+          />
+        </Campo>
+      </div>
+
+      <Campo label="E-mail" htmlFor="email">
+        <input
+          id="email"
+          type="email"
+          style={estiloInput}
+          value={dados.email}
+          onChange={(e) => atualizar('email', e.target.value)}
+          placeholder="email@exemplo.com"
+          onFocus={(e) => { e.target.style.borderColor = 'var(--azul)' }}
+          onBlur={(e) => { e.target.style.borderColor = 'var(--cinza-300)' }}
+        />
+      </Campo>
+
+      <div style={estiloGrade}>
+        <Campo label="Cliente WTG?">
+          <SeletorBooleano
+            valor={dados.cliente_wtg}
+            onChange={(v) => atualizar('cliente_wtg', v)}
+          />
+        </Campo>
+
+        <Campo label="Tem consultor?">
+          <SeletorBooleano
+            valor={dados.tem_consultor}
+            onChange={(v) => atualizar('tem_consultor', v)}
+          />
+        </Campo>
+      </div>
+
+      {dados.tem_consultor && (
+        <Campo label="Nome do consultor *" htmlFor="nome_consultor">
+          <input
+            id="nome_consultor"
+            style={estiloInput}
+            value={dados.nome_consultor}
+            onChange={(e) => atualizar('nome_consultor', e.target.value)}
+            required={dados.tem_consultor}
+            placeholder="Nome do consultor"
+            onFocus={(e) => { e.target.style.borderColor = 'var(--azul)' }}
+            onBlur={(e) => { e.target.style.borderColor = 'var(--cinza-300)' }}
+          />
+        </Campo>
+      )}
+
+      <div style={estiloGrade}>
+        <Campo label="Produto de interesse *" htmlFor="produto">
+          <select
+            id="produto"
+            style={estiloInput}
+            value={dados.produto_interesse}
+            onChange={(e) => atualizar('produto_interesse', e.target.value)}
+            required
+            onFocus={(e) => { e.target.style.borderColor = 'var(--azul)' }}
+            onBlur={(e) => { e.target.style.borderColor = 'var(--cinza-300)' }}
+          >
+            <option value="">Selecione...</option>
+            {PRODUTOS.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
+        </Campo>
+
+        <Campo label="Status" htmlFor="status">
+          <select
+            id="status"
+            style={estiloInput}
+            value={dados.status}
+            onChange={(e) => atualizar('status', e.target.value)}
+            onFocus={(e) => { e.target.style.borderColor = 'var(--azul)' }}
+            onBlur={(e) => { e.target.style.borderColor = 'var(--cinza-300)' }}
+          >
+            {Object.entries(STATUS).map(([key, { label }]) => (
+              <option key={key} value={key}>{label}</option>
+            ))}
+          </select>
+        </Campo>
+      </div>
+
+      <Campo label="Direcionado para *" htmlFor="direcionado_para">
+        <input
+          id="direcionado_para"
+          style={estiloInput}
+          value={dados.direcionado_para}
+          onChange={(e) => atualizar('direcionado_para', e.target.value)}
+          required
+          placeholder="Nome do responsável"
+          onFocus={(e) => { e.target.style.borderColor = 'var(--azul)' }}
+          onBlur={(e) => { e.target.style.borderColor = 'var(--cinza-300)' }}
+        />
+      </Campo>
+
+      <Campo label="Valor (R$)" htmlFor="valor">
+        <input
+          id="valor"
+          type="number"
+          min="0"
+          step="0.01"
+          style={estiloInput}
+          value={dados.valor}
+          onChange={(e) => atualizar('valor', e.target.value)}
+          placeholder="0,00"
+          onFocus={(e) => { e.target.style.borderColor = 'var(--azul)' }}
+          onBlur={(e) => { e.target.style.borderColor = 'var(--cinza-300)' }}
+        />
+      </Campo>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', paddingTop: '8px' }}>
+        <button
+          type="submit"
+          disabled={carregando}
+          style={{
+            padding: '10px 24px',
+            background: carregando ? 'var(--cinza-400)' : 'var(--azul)',
+            color: 'var(--branco)',
+            border: 'none',
+            borderRadius: 'var(--radius)',
+            fontSize: '14px',
+            fontWeight: '600',
+            transition: 'background var(--transicao)',
+            minWidth: '120px',
+          }}
+          onMouseEnter={(e) => { if (!carregando) e.currentTarget.style.background = 'var(--azul-hover)' }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = carregando ? 'var(--cinza-400)' : 'var(--azul)' }}
+        >
+          {carregando ? 'Salvando...' : 'Salvar'}
+        </button>
+      </div>
+    </form>
+  )
+}
+
+function Campo({ label, htmlFor, children }) {
+  return (
+    <div style={estiloGrupo}>
+      <label htmlFor={htmlFor} style={estiloLabel}>{label}</label>
+      {children}
+    </div>
+  )
+}
+
+function SeletorBooleano({ valor, onChange }) {
+  return (
+    <div style={{ display: 'flex', gap: '8px' }}>
+      {[
+        { v: true, label: 'Sim' },
+        { v: false, label: 'Não' },
+      ].map(({ v, label }) => (
+        <button
+          key={label}
+          type="button"
+          onClick={() => onChange(v)}
+          style={{
+            flex: 1,
+            padding: '9px',
+            border: valor === v ? '2px solid var(--azul)' : 'var(--borda)',
+            borderRadius: 'var(--radius)',
+            background: valor === v ? 'var(--azul-claro)' : 'var(--branco)',
+            color: valor === v ? 'var(--azul)' : 'var(--cinza-700)',
+            fontWeight: valor === v ? '600' : '400',
+            fontSize: '13px',
+            transition: 'all var(--transicao)',
+          }}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  )
+}
